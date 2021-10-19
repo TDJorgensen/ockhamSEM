@@ -674,15 +674,15 @@ print.compareFitProp <- function(x, ..., nd = 3) {
 ##'                std.lv = TRUE, estimator = "uls")
 ##' fit.par <- cfa(mod.par, data = HolzingerSwineford1939, estimator = "uls")
 ##'
-fp.hi  <- fitprop(fit.hi, reps = 100, onlypos = TRUE,
-                  parallel = "multicore", ncpus = 10,
-                  baseline.model = fit.par)
-fp.bi  <- fitprop(fit.bi, reps = 100, onlypos = TRUE,
-                  parallel = "multicore", ncpus = 10,
-                  baseline.model = fit.par)
-fp.uni <- fitprop(fit.uni, reps = 100, onlypos = TRUE,
-                  parallel = "multicore", ncpus = 10,
-                  baseline.model = fit.par)
+##' fp.hi  <- fitprop(fit.hi, reps = 100, onlypos = TRUE,
+##'                   parallel = "multicore", ncpus = 10,
+##'                   baseline.model = fit.par)
+##' fp.bi  <- fitprop(fit.bi, reps = 100, onlypos = TRUE,
+##'                   parallel = "multicore", ncpus = 10,
+##'                   baseline.model = fit.par)
+##' fp.uni <- fitprop(fit.uni, reps = 100, onlypos = TRUE,
+##'                   parallel = "multicore", ncpus = 10,
+##'                   baseline.model = fit.par)
 ##' summary(fp.hi)
 ##' ## can name the models passed to ...
 ##' compareFitProp(Higher.Order = fp.hi, Bifactor = fp.bi, Unidimensinoal = fp.uni,
