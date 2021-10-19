@@ -1,4 +1,8 @@
-# Main UI functions
+### Carl F. Falk and Michael Muthukrishna
+### contributions from Terrence D. Jorgensen (print(x) must return x)
+### Last updated: 18 October 2021
+### Main UI functions
+
 
 #' Run fit propensity analyses
 #'
@@ -507,7 +511,7 @@ print.fitprop<-function(x,...){
 "  method =                ", x$rmethod, "\n",
 "  Only positive R?        ", x$onlypos, "\n"
 )
-
+  x
 }
 
 #' Summary function for fitprop objects
@@ -586,8 +590,9 @@ print.fitprop<-function(x,...){
 #' @importFrom utils str
 #' @importFrom effsize cliff.delta cohen.d
 #' @importFrom matrixStats logSumExp
-summary.fitprop<-function(object,...,probs=seq(0,1,.1),samereps=TRUE,lower.tail=rep(TRUE,ncol(object$fit_list[[1]])),
-                          NML = FALSE, UIF=FALSE){
+summary.fitprop <- function(object, ..., probs = seq(0, 1, .1), samereps = TRUE,
+                            lower.tail = rep(TRUE, ncol(object$fit_list[[1]])),
+                            NML = FALSE, UIF = FALSE) {
 
   data<-object$fit_list
   nmod<-length(data) # number of models

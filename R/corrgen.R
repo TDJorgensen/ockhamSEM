@@ -1,4 +1,8 @@
-# Functions for generation of random correlation matrices
+### Carl F. Falk and Michael Muthukrishna
+### contributions from Kris J. Preacher (MCMC from Fortran code)
+###                    Terrence D. Jorgensen (add empirical= option to genmat)
+### Last updated: 18 October 2021
+### Functions for generation of random correlation matrices
 
 mcmc.args.default<-function(nchains, d, args=NULL){
 
@@ -147,33 +151,43 @@ mcmc <- function(nmat, dim, iter, jmpsize, reject=NULL, onlypos=NULL) {
 # Helper function that generates random matrices
 #' @importFrom matrixcalc is.positive.definite is.symmetric.matrix
 #' @importFrom clusterGeneration genPositiveDefMat
-genmat<-function(nmat=1, rmethod=c("mcmc","onion","clustergen"), control, onlypos=FALSE){
+genmat <- function(nmat = 1, rmethod = c("mcmc","onion","clustergen"), control,
+                   onlypos = FALSE,
+                   sample.nobs = integer(0), empirical = TRUE, varnames) {
 
   rmethod <- match.arg(rmethod)
 
-  if(rmethod=="mcmc"){
+  if (rmethod == "mcmc"){
     r.mat <- mcmc(nmat, control$dim, control$iter, control$jmpsize, onlypos=onlypos)
-  } else if (rmethod=="onion" | rmethod=="clustergen"){
-    r.mat<-matrix(NA,control$dim*control$dim,0)
-    for(r.indx in nmat){
+  } else if (rmethod=="onion" | rmethod=="clustergen") {
+    r.mat <- matrix(NA, nrow = control$dim*control$dim, ncol = 0)
+    for (r.indx in nmat) {
       r <- do.call("genPositiveDefMat",control)$Sigma
       if (onlypos) {
-        r = (r+1)/2 # ad-hoc correction to ensure positive manifold
+        r <- (r+1)/2 # ad-hoc correction to ensure positive manifold
       }
       if(!is.symmetric.matrix(r)){
-        r<-round(r,5) # ad-hoc fix
+        r <- round(r,5) # ad-hoc fix
       }
-      while(!is.positive.definite(r)){
-        r<-c(do.call("genPositiveDefMat",control)$Sigma)
+      while (!is.positive.definite(r)) {
+        r <- c(do.call("genPositiveDefMat",control)$Sigma)
         if (onlypos) {
-          r = (r+1)/2 # ad-hoc correction to ensure positive manifold
+          r <- (r+1)/2 # ad-hoc correction to ensure positive manifold
         }
-        if(!is.symmetric.matrix(r)){
-          r<-round(r,5) # ad-hoc fix
+        if (!is.symmetric.matrix(r)) {
+          r <- round(r,5) # ad-hoc fix
         }
       }
-      r.mat<-cbind(r.mat,as.vector(r))
+      r.mat <- cbind(r.mat,as.vector(r))
     }
   }
+
+  ## return data generated from r.mat?
+  if (length(sample.nobs) == 1L) {
+    #FIXME: update check when multigroup/level models are allowed
+    dimnames(r) <- list(varnames, varnames)
+    return(as.data.frame(MASS::mvrnorm(sample.nobs, mu = rep(0, control$dim),
+                                       Sigma = r, empirical = empirical)))
+  } # else
   return(r.mat)
 }
