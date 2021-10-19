@@ -1,5 +1,5 @@
 ### Terrence D. Jorgensen
-### Last updated: 19 October 2021
+### Last updated: 20 October 2021
 ### try out lavaanList functionality
 
 
@@ -203,6 +203,7 @@ summarizeFitProp <- function(object, ..., fit.measures = "srmr", lower.tail = TR
 ##' @export
 setMethod("summary", "FitProp", summarizeFitProp)
 
+##' @export
 print.FitPropSummary <- function(x, ...) {
   printThese <- c("obs","quantiles")
   if (!is.null(x$NML)) printThese <- c(printThese, "NML")
@@ -427,6 +428,7 @@ compareFitProp <- function(..., sameReps = TRUE, omit.reps = c("no.conv","no.se"
   out
 }
 
+##' @export
 print.compareFitProp <- function(x, ..., nd = 3) {
   cat("
     These are quantiles from each model's empirical distribution
