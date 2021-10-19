@@ -352,7 +352,6 @@ compareFitProp <- function(..., sameReps = TRUE, omit.reps = c("no.conv","no.se"
   DFs <- paste0(names(DFs), " (df = ", DFs, ")")
   template <- matrix(NA, length(mods), length(mods),
                      dimnames = list(DFs, names(mods)))
-  diag(template) <- TRUE # can't compare a model with itself
   class(template) <- c("lavaan.matrix.symmetric","matrix") # for print() method
 
   ## Loop through sorted models in sequence of most to least restricted model
@@ -494,21 +493,23 @@ print.compareFitProp <- function(x, ..., nd = 3) {
 ##' Inspired by work by Preacher (2003, 2006) and Bonifay & Cai (2017),
 ##' this function performs three steps for analyses to assess the fit propensity of competing
 ##' structural equation models:
+##'
 ##' 1. Randomly generate correlation (or covariance matrices);
 ##' 2. Fit models to each correlation matrix; and
 ##' 3. Save a indices that could be used for evaluating model fit in subsequent summaries.
+##'
 ##' Conceptually, models that exhibit better fit to such randomly generated data
 ##' may have better fit propensity, and are therefore potentially less parsimonious.
 ##'
 ##' Models must be fitted with the \code{\pkg{lavaan}} package (e.g., created
 ##' from \code{\link[lavaan]{cfa}}, \code{\link[lavaan]{sem}}, or
 ##' \code{\link[lavaan]{lavaan}} functions).
-##' Currently, only models using ML estimation are supported.
+##' Currently, only models for normal data are supported using ML or ULS estimators.
 ##' The underlying \code{\link[lavaan]{lavOptions}} from the fitted
 ##' \code{\linkS4class{lavaan}} models will be re-used when fitting the
 ##' same model to each random data pattern, which will be saved in the
 ##' returned object.
-##' A \code{summary} methods is available to summarize results for a single
+##' A \code{summary} method is available to summarize results for a single
 ##' model, and \code{\link{compareFitProp}} is available for model comparison.
 ##'
 ##' Generation of random correlation matrices is provided using several approaches. The \code{"mcmc"}
@@ -550,7 +551,7 @@ print.compareFitProp <- function(x, ..., nd = 3) {
 ##' To obtain matrices with positive manifold only, an ad-hoc correction is
 ##' implemented for these latter approaches where the matrix \eqn{R} is transformed:
 ##'
-##' \deqn{R = (R+1)/2}.
+##' \deqn{R = (R+1)/2}
 ##'
 ##' To our knowledge, there is no guarantee that this will result in uniform
 ##' sampling from the space of all correlation matrices with positive manifold,
@@ -683,14 +684,14 @@ print.compareFitProp <- function(x, ..., nd = 3) {
 ##' fp.uni <- fitprop(fit.uni, reps = 100, onlypos = TRUE,
 ##'                   parallel = "multicore", ncpus = 10,
 ##'                   baseline.model = fit.par)
-##' summary(fp.hi)
+##' summary(fp.hi, UIF = TRUE)
 ##' ## can name the models passed to ...
 ##' compareFitProp(Higher.Order = fp.hi, Bifactor = fp.bi, Unidimensinoal = fp.uni,
-##'                fit.measures = c("srmr","logl","cfi"),
-##'                lower.tail = c(TRUE, FALSE, FALSE), conf = .95,
-##'                NML = TRUE, UIF = TRUE)
-
+##'                fit.measures = c("srmr","cfi"), lower.tail = c(TRUE, FALSE),
+##'                conf = .95, UIF = TRUE)
+##'
 ##' @importFrom stats setNames
+##' @importFrom lavaan lavaanList
 ##' @export
 fitprop <- function(object,
                     use.FitProp = NULL, # option to provide existing
@@ -749,8 +750,7 @@ fitprop <- function(object,
     } else set.seed(seed)
 
     ## fit model to random patterns using lavaanList()
-    lavListCall <- object@call
-    lavListCall[[1]] <- lavaan::lavaanList
+    lavListCall <- as.list(object@call)[-1]
     lavListCall[c("data","sample.cov","sample.mean","sample.th","sample.nobs")] <- NULL
     lavListCall$ndat <- reps
     lavListCall <- c(lavListCall, dots)
@@ -770,7 +770,7 @@ fitprop <- function(object,
                          sample.nobs = lavInspect(object, "nobs"),
                          empirical = TRUE, varnames = vnames)
       ## save canned function and arguments in the call
-      lavListCall$dataFunction <- ockhamSEM::genmat #FIXME? ockhamSEM::genmat
+      lavListCall$dataFunction <- genmat
       lavListCall$dataFunction.args <- genMatArgs
     }
   }
@@ -815,7 +815,7 @@ fitprop <- function(object,
     for (i in duplicatedNames) names(temp2)[i] <- paste0("userFUN", i)
     c(temp1, temp2)
   }
-  fit <- eval(as.call(lavListCall))
+  fit <- do.call(lavaanList, lavListCall)
 
   ## assign class and add new slots
   fit <- as(fit, "FitProp")

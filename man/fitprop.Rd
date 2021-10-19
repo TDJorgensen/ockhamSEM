@@ -63,21 +63,23 @@ beyond merely degrees of freedom
 Inspired by work by Preacher (2003, 2006) and Bonifay & Cai (2017),
 this function performs three steps for analyses to assess the fit propensity of competing
 structural equation models:
+
 1. Randomly generate correlation (or covariance matrices);
 2. Fit models to each correlation matrix; and
 3. Save a indices that could be used for evaluating model fit in subsequent summaries.
+
 Conceptually, models that exhibit better fit to such randomly generated data
 may have better fit propensity, and are therefore potentially less parsimonious.
 
 Models must be fitted with the \code{\pkg{lavaan}} package (e.g., created
 from \code{\link[lavaan]{cfa}}, \code{\link[lavaan]{sem}}, or
 \code{\link[lavaan]{lavaan}} functions).
-Currently, only models using ML estimation are supported.
+Currently, only models for normal data are supported using ML or ULS estimators.
 The underlying \code{\link[lavaan]{lavOptions}} from the fitted
 \code{\linkS4class{lavaan}} models will be re-used when fitting the
 same model to each random data pattern, which will be saved in the
 returned object.
-A \code{summary} methods is available to summarize results for a single
+A \code{summary} method is available to summarize results for a single
 model, and \code{\link{compareFitProp}} is available for model comparison.
 
 Generation of random correlation matrices is provided using several approaches. The \code{"mcmc"}
@@ -119,7 +121,7 @@ by default generate matrices with both positive and negative correlations.
 To obtain matrices with positive manifold only, an ad-hoc correction is
 implemented for these latter approaches where the matrix \eqn{R} is transformed:
 
-\deqn{R = (R+1)/2}.
+\deqn{R = (R+1)/2}
 
 To our knowledge, there is no guarantee that this will result in uniform
 sampling from the space of all correlation matrices with positive manifold,
@@ -170,11 +172,13 @@ mod.hi <- ' g =~ visual + textual + speed '
 mod.bi <- paste0('g =~ x', 1:9)
 mod.par <- c(paste0('g =~ 1*x', 1:9), paste0('x', 1:9, ' ~~ evar*x', 1:9))
 
-fit.hi <- cfa(c(HS.model, mod.hi), data = HolzingerSwineford1939, std.lv = TRUE)
+fit.hi <- cfa(c(HS.model, mod.hi), data = HolzingerSwineford1939,
+              std.lv = TRUE, estimator = "uls")
 fit.bi <- cfa(c(HS.model, mod.bi), data = HolzingerSwineford1939,
-              orthogonal = TRUE, std.lv = TRUE)
-fit.uni <- cfa(mod.bi, data = HolzingerSwineford1939, std.lv = TRUE)
-fit.par <- cfa(mod.par, data = HolzingerSwineford1939)
+              orthogonal = TRUE, std.lv = TRUE, estimator = "uls")
+fit.uni <- cfa(mod.bi, data = HolzingerSwineford1939,
+               std.lv = TRUE, estimator = "uls")
+fit.par <- cfa(mod.par, data = HolzingerSwineford1939, estimator = "uls")
 
 fp.hi  <- fitprop(fit.hi, reps = 100, onlypos = TRUE,
                   parallel = "multicore", ncpus = 10,
@@ -185,12 +189,12 @@ fp.bi  <- fitprop(fit.bi, reps = 100, onlypos = TRUE,
 fp.uni <- fitprop(fit.uni, reps = 100, onlypos = TRUE,
                   parallel = "multicore", ncpus = 10,
                   baseline.model = fit.par)
-summary(fp.hi)
+summary(fp.hi, UIF = TRUE)
 ## can name the models passed to ...
 compareFitProp(Higher.Order = fp.hi, Bifactor = fp.bi, Unidimensinoal = fp.uni,
-               fit.measures = c("srmr","logl","cfi"),
-               lower.tail = c(TRUE, FALSE, FALSE), conf = .95,
-               NML = TRUE, UIF = TRUE)
+               fit.measures = c("srmr","cfi"), lower.tail = c(TRUE, FALSE),
+               conf = .95, UIF = TRUE)
+
 }
 \references{
 Bonifay, W. E., & Cai, L. (2017). On the complexity of item response theory
