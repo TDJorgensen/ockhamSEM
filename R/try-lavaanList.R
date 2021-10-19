@@ -493,11 +493,11 @@ print.compareFitProp <- function(x, ..., nd = 3) {
 ##' Inspired by work by Preacher (2003, 2006) and Bonifay & Cai (2017),
 ##' this function performs three steps for analyses to assess the fit propensity of competing
 ##' structural equation models:
-##'
-##' 1. Randomly generate correlation (or covariance matrices);
-##' 2. Fit models to each correlation matrix; and
-##' 3. Save a indices that could be used for evaluating model fit in subsequent summaries.
-##'
+##' \enumerate{
+##'   \item Randomly generate correlation (or covariance matrices);
+##'   \item Fit models to each correlation matrix; and
+##'   \item Save a indices that could be used for evaluating model fit in subsequent summaries.
+##' }
 ##' Conceptually, models that exhibit better fit to such randomly generated data
 ##' may have better fit propensity, and are therefore potentially less parsimonious.
 ##'
